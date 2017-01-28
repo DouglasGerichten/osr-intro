@@ -1,0 +1,22 @@
+sudo: false
+
+language: python
+
+notifications:
+  email: false
+
+python:
+    - "2.7"
+    - "3.4"
+    - "3.5"
+
+install:
+    - pip install coveralls
+    - pip install -r requirements.txt
+
+script:
+    - python --version
+    - py.test -v --cov=make_midi ./
+
+after_success:
+    - coveralls

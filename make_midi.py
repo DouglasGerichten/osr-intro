@@ -14,7 +14,7 @@ def rando_midi(filename):
         # Retrieve the MIDI note number for this note name
         note_number = pretty_midi.note_name_to_number(note_name)
         # Create a Note instance for this note, starting at 0s and ending at .5s
-        note = pretty_midi.Note(velocity=100, pitch=note_number, start=0, end=2)
+        note = pretty_midi.Note(velocity=100, pitch=note_number, start=0, end=2)        
         # Add it to our cello instrument
         cello.notes.append(note)
     for note_name in ['C5', 'E5', 'G5']:
