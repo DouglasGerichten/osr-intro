@@ -16,7 +16,8 @@ install:
 
 script:
     - python --version
-    - py.test -v --cov=make_midi ./
+    #verbose py.text for clearer output. coverage flag and wehre to look for test
+    - py.test -v --cov=./ ./
 
 after_success:
     - coveralls
