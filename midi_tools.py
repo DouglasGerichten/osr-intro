@@ -1,4 +1,27 @@
+""" Compute statistics over MIDI files.
+
+Usage
+-----
+# Run with default parameters
+$ python midi_tools.py data/*.mid stats.json
+
+# Run with full verbosity
+$ python midi_tools.py "data/*.mid" stats.json --verbose 50
+
+# Run with only one CPU
+$ python midi_tools.py "data/*.mid" stats.json --n_jobs 1
+
+# Run with two CPUs and a verbosity level of 20
+$ python midi_tools.py "data/*.mid" stats.json 
+"""
+
+import argparse
+import glob
+import json
+from joblib import Parallel, delayed
+import os
 import pretty_midi
+
 
 def compute_pitch_histogram(filename):
 	"""Compute weighted pitch counts over a MIDI file.
@@ -22,4 +45,44 @@ def compute_pitch_histogram(filename):
 			for note in inst.notes:
 				pc = note.pitch % 12
 				pitch_counts[pc] += (note.end - note.start)
-	return pitch_counts
+	
+	# returns e.g. data/mymidi2.mid as "data" and "mymidi2.mid"
+	name = os.path.split(filename)[-1]
+	# return as dictionary
+	return {'name': name,
+			'pitches': pitch_counts}
+
+#n_jobs how many cores to use. -1 is all -2 is all but one
+#Parallel sets up processing pool
+#parameters get passed as a dictionary for Parallel
+def process_many(filenames, n_jobs, verbose):
+	pool = Parallel(n_jobs=n_jobs, verbose=verbose)
+	fx = delayed(compute_pitch_histogram)
+	return pool(fx(fn) for fn in filenames)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "filepattern", type=str,
+        help="Filepattern for finding MIDI files, e.g. 'data/*.mid'")
+    parser.add_argument(
+        "output_file", type=str,
+        help="Output file for writing results, r.h. 'data.json'")
+    parser.add_argument(
+    	#--for optional. you must set defaults with optional arguments
+        "--n_jobs", metavar='n_jobs', type=int, default=-2,
+        help="Number of CPUs to use for processing.")
+    parser.add_argument(
+        "--verbose", metvar='verbose', type=int, default=0,
+        help="Verbosity level for writing outputs.")
+
+    args = parser.parse_args()
+    # what does glob do?
+    filenames = glob.glob(args.filepattern)
+    results =process_many(filenames)
+    with open(args.output_file, 'w') as fp:
+    	#indent=2 is for good formating
+    	json.dump(results, fp, indent=2)
+
+
+

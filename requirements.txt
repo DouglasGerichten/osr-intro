@@ -1,3 +1,4 @@
 git+git://github.com/craffel/pretty-midi.git
 pytest
 pytest-cov
+joblib
